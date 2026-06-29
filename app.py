@@ -70,10 +70,10 @@ def load_all_models():
     """Load all trained models from .pkl files"""
     models = {}
     try:
-        models['ann'] = joblib.load('ann_model.pkl')
-        models['pso'] = joblib.load('pso_model.pkl')
-        models['ga'] = joblib.load('ga_model.pkl')
-        models['gwo'] = joblib.load('gwo_model.pkl')
+        models['ann'] = joblib.load('ann_model_balanced.pkl')
+        models['pso'] = joblib.load('pso_model_balanced.pkl')
+        models['ga'] = joblib.load('ga_model_balanced.pkl')
+        models['gwo'] = joblib.load('gwo_model_balanced.pkl')
         models['scaler'] = joblib.load('scaler.pkl')
         models['label_encoder'] = joblib.load('label_encoder.pkl')
         models['feature_names'] = joblib.load('feature_names.pkl')
@@ -84,6 +84,7 @@ def load_all_models():
         return None
 
 models = load_all_models()
+
 if models is not None:
     
     FEATURE_NAMES = models['feature_names']
@@ -161,11 +162,15 @@ if models is not None:
     
     with col2:
         fig, ax = plt.subplots(figsize=(6, 4))
-        time_values = [9.2, 28.3, 35.2, 29.7] if "Balanced" in data_mode else [5.2, 15.2, 18.5, 16.8]
-        time_labels = ['9.2s', '28.3min', '35.2min', '29.7min'] if "Balanced" in data_mode else ['5.2s', '15.2min', '18.5min', '16.8min']
+        if data_mode == "⚖️ Balanced Data (200 per species)":
+            time_values = [9.2, 28.3, 35.2, 29.7]
+            time_labels = ['9.2s', '28.3min', '35.2min', '29.7min']
+        else:
+            time_values = [5.2, 15.2, 18.5, 16.8]
+            time_labels = ['5.2s', '15.2min', '18.5min', '16.8min']
         bars = ax.bar(methods, time_values, color=colors, edgecolor='black', linewidth=1.5)
         ax.set_ylabel('Training Time', fontsize=12)
-        ax.set_title('Time Comparison', fontsize=14, fontweight='bold')
+        ax.set_title('Training Time Comparison', fontsize=14, fontweight='bold')
         ax.tick_params(axis='x', rotation=15)
         for bar, t, label in zip(bars, time_values, time_labels):
             ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.5, 
@@ -175,7 +180,7 @@ if models is not None:
     
     # ===============================
     # REAL VS AUGMENTED DATA COMPARISON (ONLY IN BALANCED MODE)
-# ===============================
+    # ===============================
     
     if data_mode == "⚖️ Balanced Data (200 per species)":
         st.header("📊 Real Data vs Augmented Data Performance Comparison")
@@ -265,7 +270,7 @@ if models is not None:
     st.dataframe(per_species_df, use_container_width=True)
     
     # Bar chart for per-species accuracy
-fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(10, 6))
     x = np.arange(len(species_short))
     width = 0.2
     
@@ -356,7 +361,7 @@ fig, ax = plt.subplots(figsize=(10, 6))
         for x, y in zip(noise_levels, gwo_acc_noise):
             ax.annotate(f'{y}%', xy=(x, y), xytext=(5, 5), 
                        textcoords='offset points', fontsize=10, fontweight='bold', color='#3498db')
-plt.tight_layout()
+        plt.tight_layout()
         st.pyplot(fig)
         
         st.caption("📌 Observation: GWO maintains the highest accuracy across all noise levels, demonstrating superior robustness to measurement errors.")
@@ -411,160 +416,160 @@ plt.tight_layout()
                     fontsize=9, color='red', ha='center')
         
         plt.tight_layout()
-
         st.pyplot(fig)
         
         st.caption("📌 Observation: Accuracy improves rapidly up to 200 samples per species (from 68.5% to 77.5%), after which gains diminish significantly (+0.5% from 200 to 300 samples).")
-
-# ===============================
-# PREDICTION SECTION
-# ===============================
-
-st.header("🔮 Identify Fish Species")
-
-# Show which model is recommended based on mode
-if data_mode == "⚖️ Balanced Data (200 per species)":
-    st.info(f"🎯 Best Model: ANN-GWO 🏆 ({best_acc*100:.1f}% accuracy) - Recommended")
-else:
-    st.info(f"🎯 Best Model: ANN-GWO 🏆 (Real Data Mode - {best_acc*100:.1f}% accuracy)")
-
-# Model selection with clear labels
-model_choice = st.selectbox(
-    "Select Model for Prediction",
-    options=[
-        "ANN-GWO 🏆 (Recommended - Best)",
-        "ANN",
-        "ANN-PSO", 
-        "ANN-GA"
-    ],
-    index=0,
-    help="ANN-GWO achieved the highest accuracy in both Balanced (77.5%) and Real Data (65.2%) modes"
-)
-
-st.markdown("### Enter 15 Morphometric Measurements")
-st.caption("📌 All measurements in mm (except meristic counts which are integers)")
-
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    st.subheader("📏 Meristic Features (6)")
-    nd1 = st.number_input("ND1_Total", min_value=0.0, max_value=50.0, value=4.0, step=1.0, key="nd1_pred")
-    nd2 = st.number_input("ND2_Total", min_value=0.0, max_value=50.0, value=7.0, step=1.0, key="nd2_pred")
-    np_val = st.number_input("NP", min_value=0.0, max_value=50.0, value=14.0, step=1.0, key="np_pred")
-    nc = st.number_input("NC", min_value=0.0, max_value=50.0, value=14.0, step=1.0, key="nc_pred")
-    nv = st.number_input("NV_Total", min_value=0.0, max_value=50.0, value=6.0, step=1.0, key="nv_pred")
-    na = st.number_input("NA_Total", min_value=0.0, max_value=50.0, value=10.0, step=1.0, key="na_pred")
-
-with col2:
-    st.subheader("📐 Morphometric Features (mm)")
-    sl = st.number_input("SL", min_value=0.0, max_value=500.0, value=150.0, step=10.0, key="sl_pred")
-    pl = st.number_input("PL", min_value=0.0, max_value=300.0, value=40.0, step=5.0, key="pl_pred")
-    bh = st.number_input("BH", min_value=0.0, max_value=300.0, value=45.0, step=5.0, key="bh_pred")
-    hl = st.number_input("HL", min_value=0.0, max_value=300.0, value=40.0, step=5.0, key="hl_pred")
-
-with col3:
-    st.subheader("📐 Truss Features (mm)")
-    head = st.number_input("Head_Truss", min_value=0.0, max_value=500.0, value=80.0, step=10.0, key="head_pred")
-    ant = st.number_input("Anterior_Truss", min_value=0.0, max_value=500.0, value=70.0, step=10.0, key="ant_pred")
-    mid = st.number_input("Mid_Truss", min_value=0.0, max_value=800.0, value=200.0, step=20.0, key="mid_pred")
-    post = st.number_input("Posterior_Truss", min_value=0.0, max_value=800.0, value=200.0, step=20.0, key="post_pred")
-    tail = st.number_input("Tail_Truss", min_value=0.0, max_value=500.0, value=100.0, step=10.0, key="tail_pred")
-
-# ===============================
-# PREDICT BUTTON - DIPERBAIKI
-# ===============================
-
-if st.button("🔍 Predict Species", type="primary"):
-    try:
-        # --- FIX 1: Kumpul input dalam order yang betul ---
-        input_values = [
-            nd1, nd2, np_val, nc, nv, na,  # Meristic (6)
-            sl, pl, bh, hl,                # Morphometric (4)
-            head, ant, mid, post, tail     # Truss (5)
-        ]
-        
-        # --- FIX 2: Tukar ke numpy array dengan bentuk 2D ---
-        input_array = np.array(input_values, dtype=np.float64).reshape(1, -1)
-        
-        # --- FIX 3: Piawaikan data menggunakan scaler ---
-        input_scaled = scaler.transform(input_array)
-        
-        # --- FIX 4: Pilih model berdasarkan pilihan pengguna ---
-        # Extract model name from dropdown (remove emoji and extra text)
-        if "GWO" in model_choice:
-            model = models['gwo']
-            model_name = "ANN-GWO"
-            model_acc = f"{best_acc*100:.1f}%"
-        elif "PSO" in model_choice:
-            model = models['pso']
-            model_name = "ANN-PSO"
-            model_acc = f"{results_df[results_df['Method']=='ANN-PSO']['Accuracy'].values[0]*100:.1f}%"
-        elif "GA" in model_choice:
-            model = models['ga']
-            model_name = "ANN-GA"
-            model_acc = f"{results_df[results_df['Method']=='ANN-GA']['Accuracy'].values[0]*100:.1f}%"
-        else:  # ANN
-            model = models['ann']
-            model_name = "ANN"
-            model_acc = f"{results_df[results_df['Method']=='ANN']['Accuracy'].values[0]*100:.1f}%"
-        
-        # --- FIX 5: Ramal ---
-        prediction = model.predict(input_scaled)[0]
-        predicted_species = label_encoder.inverse_transform([prediction])[0]
-        
-        # --- FIX 6: Dapatkan kebarangkalian ---
-        probabilities = model.predict_proba(input_scaled)[0]
-        confidence = np.max(probabilities) * 100
-        
-        # --- FIX 7: Paparan keputusan ---
-        st.markdown("---")
-        st.success(f"### 🎯 Predicted Species: {predicted_species}")
-        
-        # Progress bar
-        st.progress(int(confidence))
-        
-        # Metrics
-        col_conf1, col_conf2, col_conf3, col_conf4 = st.columns(4)
-        with col_conf1:
-            st.metric("Confidence", f"{confidence:.1f}%")
-        with col_conf2:
-            st.metric("Model", model_name)
-        with col_conf3:
-            st.metric("Model Accuracy", model_acc)
-        with col_conf4:
-            st.metric("Data Mode", "Balanced" if "Balanced" in data_mode else "Real Only")
-        
-        # --- FIX 8: Probability Distribution ---
-        st.subheader("📊 Species Probabilities")
-        
-        prob_df = pd.DataFrame({
-            'Species': label_encoder.classes_,
-            'Probability (%)': probabilities * 100
-        }).sort_values('Probability (%)', ascending=False)
-        
-        # Display as bar chart
-        st.bar_chart(prob_df.set_index('Species'))
-        
-        # Also show as table
-        st.dataframe(
-            prob_df.style.background_gradient(subset=['Probability (%)'], cmap='Blues', vmin=0, vmax=100),
-            use_container_width=True
-        )
-        
-        # --- FIX 9: Debug info (optional) ---
-        with st.expander("🔍 Debug Information (Click to expand)"):
-            st.write("**Input Features (raw):**", input_values)
-            st.write("**Input Shape:**", input_array.shape)
-            st.write("**Scaled Features (first 5):**", input_scaled[0][:5])
-            st.write("**Prediction Class Index:**", prediction)
-            st.write("**Species Classes:**", list(label_encoder.classes_))
-            st.write("**Probabilities Array:**", probabilities)
-        
-    except Exception as e:
-        st.error(f"❌ Error during prediction: {e}")
-        st.info("Please check that all input values are valid numbers.")
-        st.code(f"Error details: {str(e)}")
-# ===============================
+    
+    # ===============================
+    # PREDICTION SECTION - DIPERBAIKI
+    # ===============================
+    
+    st.header("🔮 Identify Fish Species")
+    
+    # Show which model is recommended based on mode
+    if data_mode == "⚖️ Balanced Data (200 per species)":
+        st.info(f"🎯 Best Model: ANN-GWO 🏆 ({best_acc*100:.1f}% accuracy) - Recommended")
+    else:
+        st.info(f"🎯 Best Model: ANN-GWO 🏆 (Real Data Mode - {best_acc*100:.1f}% accuracy)")
+    
+    # Model selection with clear labels
+    model_choice = st.selectbox(
+        "Select Model for Prediction",
+        options=[
+            "ANN-GWO 🏆 (Recommended - Best)",
+            "ANN",
+            "ANN-PSO", 
+            "ANN-GA"
+        ],
+        index=0,
+        help="ANN-GWO achieved the highest accuracy in both Balanced (77.5%) and Real Data (65.2%) modes"
+    )
+    
+    st.markdown("### Enter 15 Morphometric Measurements")
+    st.caption("📌 Meristic counts are integers. All other measurements in mm.")
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.subheader("📏 Meristic Features (6)")
+        nd1 = st.number_input("ND1_Total", min_value=0.0, max_value=50.0, value=4.0, step=1.0, key="nd1_pred")
+        nd2 = st.number_input("ND2_Total", min_value=0.0, max_value=50.0, value=7.0, step=1.0, key="nd2_pred")
+        np_val = st.number_input("NP", min_value=0.0, max_value=50.0, value=14.0, step=1.0, key="np_pred")
+        nc = st.number_input("NC", min_value=0.0, max_value=50.0, value=14.0, step=1.0, key="nc_pred")
+        nv = st.number_input("NV_Total", min_value=0.0, max_value=50.0, value=6.0, step=1.0, key="nv_pred")
+        na = st.number_input("NA_Total", min_value=0.0, max_value=50.0, value=10.0, step=1.0, key="na_pred")
+    
+    with col2:
+        st.subheader("📐 Morphometric Features (mm)")
+        sl = st.number_input("SL", min_value=0.0, max_value=500.0, value=150.0, step=10.0, key="sl_pred")
+        pl = st.number_input("PL", min_value=0.0, max_value=300.0, value=40.0, step=5.0, key="pl_pred")
+        bh = st.number_input("BH", min_value=0.0, max_value=300.0, value=45.0, step=5.0, key="bh_pred")
+        hl = st.number_input("HL", min_value=0.0, max_value=300.0, value=40.0, step=5.0, key="hl_pred")
+    
+    with col3:
+        st.subheader("📐 Truss Features (mm)")
+        head = st.number_input("Head_Truss", min_value=0.0, max_value=500.0, value=80.0, step=10.0, key="head_pred")
+        ant = st.number_input("Anterior_Truss", min_value=0.0, max_value=500.0, value=70.0, step=10.0, key="ant_pred")
+        mid = st.number_input("Mid_Truss", min_value=0.0, max_value=800.0, value=200.0, step=20.0, key="mid_pred")
+        post = st.number_input("Posterior_Truss", min_value=0.0, max_value=800.0, value=200.0, step=20.0, key="post_pred")
+        tail = st.number_input("Tail_Truss", min_value=0.0, max_value=500.0, value=100.0, step=10.0, key="tail_pred")
+    
+    # ===============================
+    # PREDICT BUTTON - DIPERBAIKI
+    # ===============================
+    
+    if st.button("🔍 Predict Species", type="primary"):
+        try:
+            # --- FIX 1: Kumpul input dalam order yang betul ---
+            input_values = [
+                nd1, nd2, np_val, nc, nv, na,  # Meristic (6)
+                sl, pl, bh, hl,                # Morphometric (4)
+                head, ant, mid, post, tail     # Truss (5)
+            ]
+            
+            # --- FIX 2: Tukar ke numpy array dengan bentuk 2D ---
+            input_array = np.array(input_values, dtype=np.float64).reshape(1, -1)
+            
+            # --- FIX 3: Piawaikan data menggunakan scaler ---
+            input_scaled = scaler.transform(input_array)
+            
+            # --- FIX 4: Pilih model berdasarkan pilihan pengguna ---
+            # Extract model name from dropdown (remove emoji and extra text)
+            if "GWO" in model_choice:
+                model = models['gwo']
+                model_name = "ANN-GWO"
+                model_acc = f"{best_acc*100:.1f}%"
+            elif "PSO" in model_choice:
+                model = models['pso']
+                model_name = "ANN-PSO"
+                model_acc = f"{results_df[results_df['Method']=='ANN-PSO']['Accuracy'].values[0]*100:.1f}%"
+            elif "GA" in model_choice:
+                model = models['ga']
+                model_name = "ANN-GA"
+                model_acc = f"{results_df[results_df['Method']=='ANN-GA']['Accuracy'].values[0]*100:.1f}%"
+            else:  # ANN
+                model = models['ann']
+                model_name = "ANN"
+                model_acc = f"{results_df[results_df['Method']=='ANN']['Accuracy'].values[0]*100:.1f}%"
+            
+            # --- FIX 5: Ramal ---
+            prediction = model.predict(input_scaled)[0]
+            predicted_species = label_encoder.inverse_transform([prediction])[0]
+            
+            # --- FIX 6: Dapatkan kebarangkalian ---
+            probabilities = model.predict_proba(input_scaled)[0]
+            confidence = np.max(probabilities) * 100
+            
+            # --- FIX 7: Paparan keputusan ---
+            st.markdown("---")
+            st.success(f"### 🎯 Predicted Species: {predicted_species}")
+            
+            # Progress bar
+            st.progress(int(confidence))
+            
+            # Metrics
+            col_conf1, col_conf2, col_conf3, col_conf4 = st.columns(4)
+            with col_conf1:
+                st.metric("Confidence", f"{confidence:.1f}%")
+            with col_conf2:
+                st.metric("Model", model_name)
+            with col_conf3:
+                st.metric("Model Accuracy", model_acc)
+            with col_conf4:
+                st.metric("Data Mode", "Balanced" if "Balanced" in data_mode else "Real Only")
+            
+            # --- FIX 8: Probability Distribution ---
+            st.subheader("📊 Species Probabilities")
+            
+            prob_df = pd.DataFrame({
+                'Species': label_encoder.classes_,
+                'Probability (%)': probabilities * 100
+            }).sort_values('Probability (%)', ascending=False)
+            
+            # Display as bar chart
+            st.bar_chart(prob_df.set_index('Species'))
+            
+            # Also show as table
+            st.dataframe(
+                prob_df.style.background_gradient(subset=['Probability (%)'], cmap='Blues', vmin=0, vmax=100),
+                use_container_width=True
+            )
+            
+            # --- FIX 9: Debug info (optional) ---
+            with st.expander("🔍 Debug Information (Click to expand)"):
+                st.write("**Input Features (raw):**", input_values)
+                st.write("**Input Shape:**", input_array.shape)
+                st.write("**Scaled Features (first 5):**", input_scaled[0][:5])
+                st.write("**Prediction Class Index:**", prediction)
+                st.write("**Species Classes:**", list(label_encoder.classes_))
+                st.write("**Probabilities Array:**", probabilities)
+            
+        except Exception as e:
+            st.error(f"❌ Error during prediction: {e}")
+            st.info("Please check that all input values are valid numbers.")
+            st.code(f"Error details: {str(e)}")
+    
+    # ===============================
     # SUMMARY FOR THESIS
     # ===============================
     
@@ -581,7 +586,7 @@ if st.button("🔍 Predict Species", type="primary"):
             
             | Rank | Method | Accuracy | Architecture |
             |------|--------|----------|--------------|
-| 1 | ANN-GWO | 77.5% | (24,20) |
+            | 1 | ANN-GWO | 77.5% | (24,20) |
             | 2 | ANN | 76.5% | (10,5) |
             | 3 | ANN-PSO | 74.5% | (28,18) |
             | 4 | ANN-GA | 71.0% | (20,18) |
@@ -620,10 +625,10 @@ else:
     st.error("❌ Models not loaded. Please ensure all .pkl files are uploaded to GitHub.")
     st.info("""
     Required files to upload:
-    - ann_model.pkl
-    - pso_model.pkl
-    - ga_model.pkl
-    - gwo_model.pkl
+    - ann_model_balanced.pkl
+    - pso_model_balanced.pkl
+    - ga_model_balanced.pkl
+    - gwo_model_balanced.pkl
     - scaler.pkl
     - label_encoder.pkl
     - feature_names.pkl
