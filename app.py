@@ -452,27 +452,27 @@ if models is not None:
     
     with col1:
         st.subheader("📏 Meristic Features (6)")
-        nd1 = st.number_input("ND1_Total", min_value=0.0, max_value=50.0, value=4.0, step=1.0, key="nd1_pred")
-        nd2 = st.number_input("ND2_Total", min_value=0.0, max_value=50.0, value=7.0, step=1.0, key="nd2_pred")
-        np_val = st.number_input("NP", min_value=0.0, max_value=50.0, value=14.0, step=1.0, key="np_pred")
-        nc = st.number_input("NC", min_value=0.0, max_value=50.0, value=14.0, step=1.0, key="nc_pred")
-        nv = st.number_input("NV_Total", min_value=0.0, max_value=50.0, value=6.0, step=1.0, key="nv_pred")
-        na = st.number_input("NA_Total", min_value=0.0, max_value=50.0, value=10.0, step=1.0, key="na_pred")
+        nd1 = st.number_input("ND1_Total(First Dorsal Fin Spines + Soft Rays)", min_value=0.0, max_value=50.0, value=4.0, step=1.0, key="nd1_pred")
+        nd2 = st.number_input("ND2_Total(Second Dorsal Fin spines + Soft Rays)", min_value=0.0, max_value=50.0, value=7.0, step=1.0, key="nd2_pred")
+        np_val = st.number_input("NP(Pectoral Fin Rays)", min_value=0.0, max_value=50.0, value=14.0, step=1.0, key="np_pred")
+        nc = st.number_input("NC(Caudal Fin Rays)", min_value=0.0, max_value=50.0, value=14.0, step=1.0, key="nc_pred")
+        nv = st.number_input("NV_Total(Ventral Fin Spines + Soft Rays)", min_value=0.0, max_value=50.0, value=6.0, step=1.0, key="nv_pred")
+        na = st.number_input("NA_Total(Anal Fin Spines + Soft Rays)", min_value=0.0, max_value=50.0, value=10.0, step=1.0, key="na_pred")
     
     with col2:
         st.subheader("📐 Morphometric Features (mm)")
-        sl = st.number_input("SL", min_value=0.0, max_value=500.0, value=150.0, step=10.0, key="sl_pred")
-        pl = st.number_input("PL", min_value=0.0, max_value=300.0, value=40.0, step=5.0, key="pl_pred")
-        bh = st.number_input("BH", min_value=0.0, max_value=300.0, value=45.0, step=5.0, key="bh_pred")
-        hl = st.number_input("HL", min_value=0.0, max_value=300.0, value=40.0, step=5.0, key="hl_pred")
+        sl = st.number_input("SL(Standard Length)", min_value=0.0, max_value=500.0, value=150.0, step=10.0, key="sl_pred")
+        pl = st.number_input("PL(Pectoral Fin Length)", min_value=0.0, max_value=300.0, value=40.0, step=5.0, key="pl_pred")
+        bh = st.number_input("BH(Body Height)", min_value=0.0, max_value=300.0, value=45.0, step=5.0, key="bh_pred")
+        hl = st.number_input("HLHead Length)", min_value=0.0, max_value=300.0, value=40.0, step=5.0, key="hl_pred")
     
     with col3:
         st.subheader("📐 Truss Features (mm)")
-        head = st.number_input("Head_Truss", min_value=0.0, max_value=500.0, value=80.0, step=10.0, key="head_pred")
-        ant = st.number_input("Anterior_Truss", min_value=0.0, max_value=500.0, value=70.0, step=10.0, key="ant_pred")
-        mid = st.number_input("Mid_Truss", min_value=0.0, max_value=800.0, value=200.0, step=20.0, key="mid_pred")
-        post = st.number_input("Posterior_Truss", min_value=0.0, max_value=800.0, value=200.0, step=20.0, key="post_pred")
-        tail = st.number_input("Tail_Truss", min_value=0.0, max_value=500.0, value=100.0, step=10.0, key="tail_pred")
+        head = st.number_input("Head_Truss(Sum of A-B, A-C, A-D)", min_value=0.0, max_value=500.0, value=80.0, step=10.0, key="head_pred")
+        ant = st.number_input("Anterior_Truss(Sum of B-C, B-D, C-D)", min_value=0.0, max_value=500.0, value=70.0, step=10.0, key="ant_pred")
+        mid = st.number_input("Mid_Truss(Sum of C-E, C-F, D-E, D-F, E-F)", min_value=0.0, max_value=800.0, value=200.0, step=20.0, key="mid_pred")
+        post = st.number_input("Posterior_Truss(Sum of E-G, E-H, F-G, F-H, G-H)", min_value=0.0, max_value=800.0, value=200.0, step=20.0, key="post_pred")
+        tail = st.number_input("Tail_Truss(Sum of G-I, G-J, H-I, H-J, I-J)", min_value=0.0, max_value=500.0, value=100.0, step=10.0, key="tail_pred")
     
     # ===============================
     # PREDICT BUTTON - DIPERBAIKI
